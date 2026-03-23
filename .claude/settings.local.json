@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(python3:*)",
+      "Bash(mamba run:*)",
+      "Bash(grep -rn \"\\\\.exec_\\(\\)\\\\|setMargin\\\\|setResizeMode\\\\|header\\(\\)\\\\.setResizeMode\\\\|QRegExp\\\\|QDesktopWidget\\\\|setTextFormat\\\\|AlignLeading\\\\|AlignTrailing\" /Users/bobbysaba/Documents/sharppy --include=*.py)",
+      "Bash(grep -n \"outlets\\\\|outlet\" /Users/bobbysaba/Documents/sharppy/datasources/*.xml)",
+      "Bash(ls /Users/bobbysaba/Documents/sharppy/datasources/*.xml)",
+      "Bash(ls ~/.sharppy/datasources/*.xml)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:kylejgillett.github.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:kbkb-wx-python.blogspot.com)",
+      "WebFetch(domain:weather.ou.edu)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:unidata.github.io)",
+      "WebFetch(domain:www.alaskanresearcher.dev)",
+      "Bash(kill 74039)",
+      "Bash(conda run:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/bobbysaba/Documents/sharppy/**)",
+      "Bash(grep -rn \"QMessageBox\\\\.\\\\\\(Ok\\\\|Yes\\\\|No\\\\|Cancel\\\\|Warning\\\\|Critical\\\\|Information\\\\\\)\\\\b\\\\|QFrame\\\\.\\\\\\(StyledPanel\\\\|Raised\\\\|Sunken\\\\|HLine\\\\|VLine\\\\|Box\\\\\\)\\\\b\\\\|QSizePolicy\\\\.\\\\\\(Expanding\\\\|Fixed\\\\|Minimum\\\\|Maximum\\\\|Preferred\\\\\\)\\\\b\\\\|QFont\\\\.Bold\\\\b\\\\|QFont\\\\.Normal\\\\b\" /Users/bobbysaba/Documents/sharppy/runsharp/ /Users/bobbysaba/Documents/sharppy/sharppy/viz/ --include=*.py)",
+      "Bash(grep -rn \"\\\\.delta\\(\\)\\\\|QMessageBox\\\\.\\\\\\(Yes\\\\|No\\\\|Ok\\\\|Cancel\\\\|Close\\\\|ActionRole\\\\|RejectRole\\\\|Critical\\\\|Warning\\\\|Information\\\\\\)[^.]\" /Users/bobbysaba/Documents/sharppy/runsharp/ /Users/bobbysaba/Documents/sharppy/sharppy/viz/ --include=*.py)",
+      "Bash(pip3 show:*)",
+      "Bash(python3 -c \":*)"
+    ]
+  }
+}
