@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bsharp"
+version = "1.0.0"
+description = "CLI and library for generating SHARPpy-style atmospheric sounding figures"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.15",
+    "python-dateutil",
+    "requests",
+    "qtpy",
+    "certifi",
+]
+
+[project.scripts]
+bsharp = "bsharp.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bsharp*"]

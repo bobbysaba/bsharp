@@ -1,128 +1,92 @@
-# SHARPpy
+# bsharp (B♯)
 
-###### Sounding/Hodograph Analysis and Research Program in Python
+A command-line tool and Python library for generating atmospheric sounding figures from SPC-format data files. Built on the backend of the SHARPpy library.
 
-[![Test Status](https://github.com/NUCAPS/SHARPpy/actions/workflows/pytest.yml/badge.svg?branch=master)](https://github.com/NUCAPS/SHARPpy/actions/workflows/pytest.yml)
-[![Build Status](https://github.com/NUCAPS/SHARPpy/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/NUCAPS/SHARPpy/actions/workflows/build.yml)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/sharppy/badges/downloads.svg)](https://anaconda.org/conda-forge/sharppy)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/sharppy/badges/license.svg)](https://anaconda.org/conda-forge/sharppy)
-[![](https://img.shields.io/github/downloads/sharppy/SHARPpy/total.svg?style=popout)](https://github.com/sharppy/SHARPpy/releases)
-[![Coverage Status](https://coveralls.io/repos/github/sharppy/SHARPpy/badge.svg?branch=master)](https://coveralls.io/github/sharppy/SHARPpy?branch=master)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/sharppy/badges/platforms.svg)](https://anaconda.org/conda-forge/sharppy)
+## Credit
 
-SHARPpy is a collection of open source sounding and hodograph analysis routines, a sounding plotting package, and an interactive, __cross-platform__ application for analyzing real-time soundings all written in Python. It was developed to provide the atmospheric science community a free and consistent source of sounding analysis routines. SHARPpy is constantly updated and vetted by professional meteorologists and climatologists within the scientific community to help maintain a standard source of sounding routines.
+This project is derived from [SHARPpy (Sounding/Hodograph Analysis and Research Program in Python)](https://github.com/sharppy/SHARPpy), developed by Patrick Marsh, Kelton Halbert, Greg Blumberg, and Tim Supinie. The atmospheric analysis routines (`sharptab`), visualization widgets (`viz`), and database assets are sourced directly from that project. bsharp strips the interactive GUI and data-fetching infrastructure, leaving the core analysis and rendering engine accessible as an installable CLI and library.
 
-The version of SHARPpy in this repository allows users to access [NUCAPS](https://weather.msfc.nasa.gov/nucaps/), a satellite sounding product.
+---
 
-### Important links:
-* HTML Documentation: http://sharppy.github.io/SHARPpy/index.html
-* GitHub repository: https://github.com/sharppy/SHARPpy
-
-**Table of Contents**
-
-- [Install Pre-requisites](#install-pre-requisites)
-- [Install SHARPpy](#install-sharppy)
-- [Running SHARPpy from the Command Line](#running-sharppy-from-the-command-line)
-- [SHARPpy Development Team](#sharppy-development-team)
-
-=======================================================================
-## Install Pre-requisites
-<sup>[[Return to Top]](#sharppy)</sup>
-
-You will need Python 3 to run SHARPpy. For instructions, visit the following websites:
-* https://www.anaconda.com/products/individual for instructions on how to set-up Python.
-
-You will need run a few simple commands in a command line program:
-* Linux/MacOS: Open the Terminal application.
-* Windows: Open the Anaconda Prompt application.
-
-Note: If you are installing Anaconda for **multiple users**, [ensure these additional steps are met](https://docs.anaconda.com/anaconda/install/multi-user/), which includes checking the permissions using an administrator account.
-
-=======================================================================
-## Install SHARPpy
-<sup>[[Return to Top]](#sharppy)</sup>
-
-For those wishing to run both the GUI and do scripting, we recommend you install the Python 3 Anaconda Python Distribution from Continuum Analytics. You can install SHARPpy from conda by using:
-
-```bash
-conda install -c conda-forge sharppy
-```
-Skip to the 'Running SHARPpy from the Command Line' section.
-
-### Download options
-If you aren't downloading from conda forge, you can download sharppy using the following options.
-
-### Option 1: Manual download (easy)
-
-You can manually download the coding by clicking the "Code" button at the top right of the repository, then select "Download Zip." Unzip the files in the directory that you want to permanently store them.
-
-### Option 2: Download using Git (intermediate)
-
-If you have Git installed and are familiar with it, open the command line for your operating system (see above) to perform these steps.
-
-```bash
-git clone https://github.com/sharppy/SHARPpy
-```
-
-### Install SHARPpy
-
-Open the terminal (UNIX/Linux) or Anaconda Prompt (Windows) and change your directory to where you have downloaded SHARPpy (e.g. /home/{user}/SHARPpy).
-
-```bash
-cd /home/<user>/SHARPpy
-```
-
-Next, we to create an isolated Anaconda environment just for running SHARPpy with all the necessary libraries (using conda env create {options}; it may take several minutes to install the libraries). If you are interested, you can open the environment.yml file to see which libraries are used.
+## Installation
 
 ```bash
 conda env create -f environment.yml
+conda activate bsharp
+pip install -e .
 ```
 
-After creating the environment, we need to switch to this new environment (via conda activate {env_name}) which we have named devel.
+## CLI usage
 
 ```bash
-conda activate devel
+# Output named automatically: YYYYMMDD_HHMM_<station>.png
+bsharp input.txt
+
+# Specify output path
+bsharp input.txt -o my_output.png
 ```
 
-Run setup.py to update SHARPpy.
+## Scripting
 
-```bash
-python setup.py install
+```python
+from bsharp.io.spc_decoder import SPCDecoder
+from bsharp.sharptab import profile, params, winds, interp, utils
+
+# From a file
+dec = SPCDecoder('input.txt')
+prof_col = dec.getProfiles()
+prof = prof_col.getHighlightedProf()
+
+# Or build a profile from raw arrays
+prof = profile.create_profile(
+    profile='convective',
+    pres=pres_array,   # hPa
+    hght=hght_array,   # m
+    tmpc=tmpc_array,   # C
+    dwpc=dwpc_array,   # C
+    wdir=wdir_array,   # deg
+    wspd=wspd_array,   # kts
+    strictQC=False
+)
+
+# Access computed parameters
+print(prof.mupcl.bplus)    # MUCAPE
+print(prof.mlpcl.lclhght)  # MLLCL
+print(prof.pwat)           # PWV
+
+srwind = params.bunkers_storm_motion(prof)
+srh = winds.helicity(prof, 0, 3000., stu=srwind[0], stv=srwind[1])
 ```
 
-Once the installation is complete, keep the terminal open and follow the steps in the next section to launch SHARPpy.
+## Input format
 
-### Running SHARPpy from the Command Line
+Files must be in SPC format:
 
-In the command line, type the command sharppy to launch the program.
-
-```bash
-sharppy
+```
+%TITLE%
+STATION_ID YYMMDD/HHMM
+%RAW%
+pressure,height,temperature,dewpoint,wind_dir,wind_speed
+...
+%END%
 ```
 
-If successful, a window will open which will give you access to soundings from NUCAPS, RAOBS, and select models.  For instructions on using SHARPpy, see the “Display NUCAPS in SHARPpy” quick guide.
+Columns are comma-delimited. Units: pressure (hPa), height (m), temperature (C), dewpoint (C), wind direction (deg), wind speed (kts).
 
-### How to run SHARPpy next time you log on
+## Project structure
 
-If you close the terminal window, you will have to repeat the following steps:
-
-1. Open the terminal (Unix/Linux) or Anaconda Prompt (Windows)
-2. Switch your environment to devel ("conda activate devel")
-3. Type sharppy and the window should launch.
-
-```bash
-conda activate devel
-sharppy
 ```
-
-=======================================================================
-## SHARPpy Development Team
-<sup>[[Return to Top]](#sharppy)</sup>
-
-SHARPpy is currently managed by the following co-developers (in no particular order):
-- Patrick Marsh (SPC)
-- Kelton Halbert (UW-Madison)
-- Greg Blumberg (NASA GSFC)
-- Tim Supinie (OU School of Meteorology)
-- Rebekah Esmaili (Science and Technology Corp.)
-- Jeff Szkodzinski (Science and Technology Corp.)
+bsharp/
+├── pyproject.toml
+├── environment.yml
+├── plot_sounding.py       # convenience shim (works without installing)
+└── bsharp/
+    ├── __init__.py        # __version__
+    ├── cli.py             # bsharp entry point
+    ├── config.py          # Qt config management
+    ├── utils.py           # Qt utilities
+    ├── viz/               # Qt rendering widgets (SPCWindow, skew, hodo, etc.)
+    ├── sharptab/          # atmospheric analysis (params, winds, interp, thermo, ...)
+    ├── io/                # SPC file decoder
+    └── databases/         # SARS analogues, PWV climatology
+```

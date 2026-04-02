@@ -26,7 +26,26 @@
       "Bash(grep -rn \"QMessageBox\\\\.\\\\\\(Ok\\\\|Yes\\\\|No\\\\|Cancel\\\\|Warning\\\\|Critical\\\\|Information\\\\\\)\\\\b\\\\|QFrame\\\\.\\\\\\(StyledPanel\\\\|Raised\\\\|Sunken\\\\|HLine\\\\|VLine\\\\|Box\\\\\\)\\\\b\\\\|QSizePolicy\\\\.\\\\\\(Expanding\\\\|Fixed\\\\|Minimum\\\\|Maximum\\\\|Preferred\\\\\\)\\\\b\\\\|QFont\\\\.Bold\\\\b\\\\|QFont\\\\.Normal\\\\b\" /Users/bobbysaba/Documents/sharppy/runsharp/ /Users/bobbysaba/Documents/sharppy/sharppy/viz/ --include=*.py)",
       "Bash(grep -rn \"\\\\.delta\\(\\)\\\\|QMessageBox\\\\.\\\\\\(Yes\\\\|No\\\\|Ok\\\\|Cancel\\\\|Close\\\\|ActionRole\\\\|RejectRole\\\\|Critical\\\\|Warning\\\\|Information\\\\\\)[^.]\" /Users/bobbysaba/Documents/sharppy/runsharp/ /Users/bobbysaba/Documents/sharppy/sharppy/viz/ --include=*.py)",
       "Bash(pip3 show:*)",
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(grep -l \"matplotlib\\\\|pyplot\" /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Bash(grep -l \"class.*QWidget\\\\|class.*QFrame\" /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Bash(grep \"QApplication\\\\|QMainWindow\" /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Bash(python:*)",
+      "Bash(grep -h \"^from sharppy.viz\\\\|^import sharppy.viz\" /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Read(//tmp/**)",
+      "Bash(ls /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Bash(xargs -I {} basename {} .py)",
+      "Bash(ls:*)",
+      "Bash(grep -r \"ensemble\\\\|generic\\\\|map\" /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Bash(grep -h \"^import sharppy.sharptab\\\\|^from sharppy.sharptab\" /Users/bobbysaba/Documents/sharppy/sharppy/viz/*.py)",
+      "Bash(find /Users/bobbysaba/Documents/sharppy -type d -name __pycache__ -exec rm -rf {} +)",
+      "Bash(xargs sed:*)",
+      "Bash(sed -i '' -e 's/#from bsharp\\\\._sharppy_version import __version__, __version_name__//' -e '/from bsharp\\\\._version import get_versions/d' -e 's/__version__ = get_versions\\(\\)\\\\[.version.\\\\]/__version__ = __version__/' -e '/del get_versions/d' bsharp/viz/SPCWindow.py)",
+      "Bash(sed -i '' \"s/__version__ = __version__/from bsharp import __version__/\" bsharp/viz/SPCWindow.py)",
+      "Bash(printf \"__version__ = '1.0.0'\\\\n\\\\n__all__ = ['sharptab', 'viz', 'databases', 'io']\\\\n\")",
+      "Bash(2>&1)",
+      "Bash(sed -i '' -e 's/SHARPpy v%s %s/bsharp v%s %s/' -e 's/title = '\\\\''SHARPpy: Sounding and Hodograph Analysis and Research Program '\\\\''/title = '\\\\''bsharp'\\\\''/' -e 's/title += '\\\\''in Python'\\\\''//' -e 's/SHARPpy has detected/bsharp has detected/' /Users/bobbysaba/Documents/sharppy/bsharp/viz/SPCWindow.py)",
+      "Bash(sed -i '' 's/SHARPpy Preferences/bsharp Preferences/' /Users/bobbysaba/Documents/sharppy/bsharp/viz/preferences.py)"
     ]
   }
 }

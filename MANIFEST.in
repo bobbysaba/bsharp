@@ -1,2 +1,0 @@
-include versioneer.py
-include sharppy/_version.py
