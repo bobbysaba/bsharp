@@ -1,4 +1,4 @@
-# bsharp (B♯)
+# bsharp
 
 A command-line tool and Python library for generating atmospheric sounding figures from SPC-format data files. Built on the backend of the SHARPpy library.
 
