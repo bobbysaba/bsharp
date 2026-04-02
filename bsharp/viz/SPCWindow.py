@@ -233,9 +233,61 @@ class SPCWidget(QWidget):
             self.pixmapToFile(file_name)
             self.config['paths', 'save_img'] = os.path.dirname(file_name)
 
-    def pixmapToFile(self, file_name):
+    def pixmapToFile(self, file_name, annotations=None):
+        """
+        Save the widget to an image file.
+
+        annotations : dict, optional
+            If provided, a 20-pixel black bar is appended to the bottom of the
+            image and the following optional keys are rendered into it:
+
+            'location' : str  — centered at the top of the original image
+                                 (e.g. "LIDAR (34.19, -101.75)")
+            'bottom_left'  : str  — bottom-left of the bar
+                                     (e.g. "Created: 01 Apr 2026 18:00:00 UTC   (Bobby Saba)")
+            'bottom_right' : str  — bottom-right of the bar
+                                     (e.g. "PRELIM. DATA NOAA/OAR/NSSL")
+        """
+        from qtpy.QtGui import QPixmap, QPainter, QColor, QFont
+        from qtpy.QtCore import Qt
+
+        pixmap = self.grab()
+
+        if annotations:
+            bar_h = 20
+            annotated = QPixmap(pixmap.width(), pixmap.height() + bar_h)
+            annotated.fill(QColor(0, 0, 0))
+            painter = QPainter(annotated)
+            painter.drawPixmap(0, 0, pixmap)
+
+            painter.setPen(QColor(255, 255, 255))
+            font = QFont()
+            font.setPointSize(8)
+            painter.setFont(font)
+
+            w, h = annotated.width(), annotated.height()
+
+            if annotations.get('location'):
+                painter.drawText(0, 0, w, 16,
+                                 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
+                                 annotations['location'])
+
+            bar_y = pixmap.height()
+            if annotations.get('bottom_left'):
+                painter.drawText(10, bar_y, w - 20, bar_h,
+                                 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                                 annotations['bottom_left'])
+
+            if annotations.get('bottom_right'):
+                painter.drawText(0, bar_y, w - 10, bar_h,
+                                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                                 annotations['bottom_right'])
+
+            painter.end()
+            pixmap = annotated
+
         fmt = file_name.split(".")[-1].upper()
-        self.grab().save(file_name, fmt, 100)
+        pixmap.save(file_name, fmt, 100)
 
     def savetext(self):
         logging.debug("Save the data to the disk.")
