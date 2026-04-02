@@ -37,3 +37,16 @@ pip-log.txt
 # General Files
 __git_version__.py
 .DS_Store
+
+# Python
+__pycache__/
+
+# Egg info (directory)
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+
+# Claude Code
+.claude/
