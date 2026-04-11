@@ -48,14 +48,19 @@ class SPCDecoder(Decoder):
 
         ## read the data into arrays
         p, h, T, Td, wdir, wspd = np.genfromtxt( sound_data, delimiter=',', comments="%", unpack=True )
-#       idx = np.argsort(p, kind='mergesort')[::-1] # sort by pressure in case the pressure array is off.
 
-        pres = p #[idx]
-        hght = h #[idx]
-        tmpc = T #[idx]
-        dwpc = Td #[idx]
-        wspd = wspd #[idx]
-        wdir = wdir #[idx]
+        # genfromtxt returns scalars when there is only one data row; ensure arrays
+        p    = np.atleast_1d(p)
+        h    = np.atleast_1d(h)
+        T    = np.atleast_1d(T)
+        Td   = np.atleast_1d(Td)
+        wdir = np.atleast_1d(wdir)
+        wspd = np.atleast_1d(wspd)
+
+        pres = p
+        hght = h
+        tmpc = T
+        dwpc = Td
 
         # Br00tal hack
         if hght[0] > 30000:
@@ -73,6 +78,8 @@ class SPCDecoder(Decoder):
         prof_coll.setMeta('loc', location)
         prof_coll.setMeta('observed', True)
         prof_coll.setMeta('base_time', time)
+        prof_coll.setMeta('latitude', lat)
+        prof_coll.setMeta('longitude', lon)
         return prof_coll
 
 #if __name__ == '__main__':

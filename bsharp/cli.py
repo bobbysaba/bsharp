@@ -12,6 +12,11 @@ import argparse
 import sys
 import os
 import warnings
+
+# Prefer PySide6 — must be set before any qtpy import
+os.environ.setdefault('QT_API', 'pyside6')
+os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
+os.environ.setdefault('QT_LOGGING_RULES', 'qt.qpa.*=false')
 warnings.filterwarnings("ignore")
 
 from bsharp.utils import patch_qt6_mouse_events
@@ -37,6 +42,14 @@ def main():
     parser.add_argument(
         '-o', '--output', default=None,
         help='Output image path (default: <YYYYMMDD_HHMM>_<station>.png)',
+    )
+    parser.add_argument(
+        '--credit', default=None, metavar='NAME',
+        help='Name to include in the "Created" annotation (e.g. "Bobby Saba")',
+    )
+    parser.add_argument(
+        '--prelim', action='store_true',
+        help='Add "PRELIM. DATA NOAA/OAR/NSSL" annotation to the image',
     )
     args = parser.parse_args()
 
@@ -68,10 +81,38 @@ def main():
 
     widget.addProfileCollection(prof_col, stn_id)
 
+    # Build optional annotation dict — only populated when at least one flag is used.
+    annotations = None
+    if args.credit or args.prelim:
+        import datetime as _dt
+        from datetime import timezone as _tz
+        import numpy.ma as _ma
+
+        annotations = {}
+
+        # Location label: station ID + lat/lon if available in the profile
+        lat = prof_col.getMeta('latitude')
+        lon = prof_col.getMeta('longitude')
+        lat = None if _ma.is_masked(lat) else lat
+        lon = None if _ma.is_masked(lon) else lon
+        if lat is not None and lon is not None:
+            annotations['location'] = f"{stn_id} ({lat:.3f}, {lon:.3f})"
+        else:
+            annotations['location'] = stn_id
+
+        # Bottom-left: created timestamp + optional credit name
+        utcnow = _dt.datetime.now(_tz.utc).strftime('%d %b %Y %H:%M:%S')
+        credit_str = f'   ({args.credit})' if args.credit else ''
+        annotations['bottom_left'] = f'Created: {utcnow} UTC{credit_str}'
+
+        # Bottom-right: prelim text
+        if args.prelim:
+            annotations['bottom_right'] = 'PRELIM. DATA NOAA/OAR/NSSL'
+
     # Let Qt finish all pending paint events before grabbing.
     def grab_and_exit():
         app.processEvents()
-        widget.pixmapToFile(output)
+        widget.pixmapToFile(output, annotations=annotations)
         print(f"Saved: {output}")
         app.quit()
 
