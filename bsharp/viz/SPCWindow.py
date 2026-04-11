@@ -20,10 +20,6 @@ import os
 import re
 import logging
 
-__codename__ = "Andover"
-from bsharp import __version__
-__version_name__ = ''
-
 def _modifySheet(sheet, name, value):
     return re.sub("(?<= %s: )#[0-9A-Fa-f]{6}" % name, value, sheet)
 
@@ -154,7 +150,7 @@ class SPCWidget(QWidget):
                          "  border-color: " + fg_hex + ";"
                          "  margin: 0px;}")
 
-        self.brand = QLabel("bsharp v%s %s" % (__version__, __version_name__))
+        self.brand = QLabel("bsharp v1 (powered by SHARPpy)")
         self.brand.setAlignment(Qt.AlignRight)
         self.brand.setStyleSheet("QFrame {"
                              "  background-color: " + bg_hex + ";"
