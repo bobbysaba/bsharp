@@ -5,6 +5,7 @@ from bsharp.viz import plotSkewT, plotHodo, plotText, plotAnalogues
 from bsharp.viz import plotThetae, plotWinds, plotSpeed, plotKinematics #, plotGeneric
 from bsharp.viz import plotSlinky, plotWatch, plotAdvection, plotSTP, plotWinter
 from bsharp.viz import plotSHIP, plotSTPEF, plotFire, plotVROT
+from bsharp.viz.fonts import HEADER_POINT_SIZE, font as viz_font
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
@@ -152,7 +153,7 @@ class SPCWidget(QWidget):
 
         self.brand = QLabel("bsharp v1 (powered by SHARPpy)")
         self.brand.setAlignment(Qt.AlignRight)
-        self.brand.setStyleSheet("QFrame {"
+        self.brand.setStyleSheet("QLabel {"
                              "  background-color: " + bg_hex + ";"
                              "  text-align: right;"
                              "  padding-top: 4px;"
@@ -244,7 +245,7 @@ class SPCWidget(QWidget):
             'bottom_right' : str  — bottom-right of the bar
                                      (e.g. "PRELIM. DATA NOAA/OAR/NSSL")
         """
-        from qtpy.QtGui import QPixmap, QPainter, QColor, QFont
+        from qtpy.QtGui import QPixmap, QPainter, QColor
         from qtpy.QtCore import Qt
 
         pixmap = self.grab()
@@ -257,9 +258,7 @@ class SPCWidget(QWidget):
             painter.drawPixmap(0, 0, pixmap)
 
             painter.setPen(QColor(255, 255, 255))
-            font = QFont()
-            font.setPointSize(8)
-            painter.setFont(font)
+            painter.setFont(viz_font(HEADER_POINT_SIZE))
 
             w, h = annotated.width(), annotated.height()
 

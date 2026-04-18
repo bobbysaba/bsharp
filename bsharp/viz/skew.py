@@ -4,6 +4,7 @@ from bsharp.sharptab.constants import *
 from bsharp.sharptab.profile import Profile, create_profile
 from bsharp.viz.draggable import Draggable
 from bsharp.viz.barbs import drawBarb
+from bsharp.viz.fonts import HEADER_POINT_SIZE, font, point_size
 from qtpy import QtGui, QtCore, QtWidgets
 from qtpy.QtGui import *
 from qtpy.QtCore import *
@@ -51,23 +52,21 @@ class backgroundSkewT(QWidget):
         #self.bg_color=QColor('#000000')
         if self.physicalDpiX() > 75:
             fsize = 6
-            fsizet = 10
         else:
             fsize = 7
-            fsizet = 14
-        self.title_font = QtGui.QFont('Helvetica', fsizet + (self.hgt * 0.006))
+        self.title_font = font(HEADER_POINT_SIZE)
         self.title_metrics = QtGui.QFontMetrics( self.title_font )
         #self.title_font.setBold(True)
-        self.title_height = self.title_metrics.xHeight() + 15 + (self.hgt * 0.003)
+        self.title_height = self.title_metrics.height() + 4
 
-        self.label_font = QtGui.QFont('Helvetica', fsize + 2 + (self.hgt * 0.0045))
-        self.environment_trace_font = QtGui.QFont('Helvetica', 11 + (self.hgt * 0.0045))
-        self.in_plot_font = QtGui.QFont('Helvetica', fsize + (self.hgt * 0.0045))
-        self.esrh_font = QtGui.QFont('Helvetica', fsize + 2 + (self.hgt * 0.0045))
-        self.hght_font = QtGui.QFont('Helvetica', 9 + (self.hgt * 0.0045))
+        self.label_font = font(fsize + 2 + (self.hgt * 0.0045), minimum=7, maximum=11)
+        self.environment_trace_font = font(10)
+        self.in_plot_font = font(fsize + (self.hgt * 0.0045), minimum=7, maximum=10)
+        self.esrh_font = font(fsize + 2 + (self.hgt * 0.0045), minimum=7, maximum=11)
+        self.hght_font = font(9 + (self.hgt * 0.0045), minimum=8, maximum=11)
 
         self.esrh_metrics = QtGui.QFontMetrics( self.esrh_font )
-        self.esrh_height = self.esrh_metrics.xHeight() + 9 + (self.hgt * 0.0045)
+        self.esrh_height = self.esrh_metrics.height() + point_size(4 + (self.hgt * 0.002), minimum=4, maximum=7)
 
         self.plotBitMap = QtGui.QPixmap(self.width(), self.height())
         self.saveBitMap = None
@@ -1113,7 +1112,7 @@ class plotSkewT(backgroundSkewT):
 
     def drawTitles(self, qp):
         logging.debug("Drawing the titles on the Skew-T")
-        box_width = 150
+        box_width = int(min(max(self.width() * 0.34, 260), 390))
 
         cur_dt = self.prof_collections[self.pc_idx].getCurrentDate()
         idxs, titles = list(zip(*[ (idx, self.getPlotTitle(pc)) for idx, pc in enumerate(self.prof_collections) if pc.getCurrentDate() == cur_dt or self.all_observed ]))
@@ -1127,7 +1126,8 @@ class plotSkewT(backgroundSkewT):
         qp.setPen(pen)
 
         rect0 = QtCore.QRect(self.lpad, 2, box_width, self.title_height)
-        qp.drawText(rect0, QtCore.Qt.TextDontClip | QtCore.Qt.AlignLeft, main_title)
+        title = self.title_metrics.elidedText(main_title, QtCore.Qt.ElideRight, box_width)
+        qp.drawText(rect0, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, title)
 
         bg_color_idx = 0
         for idx, title in enumerate(titles):
@@ -1136,7 +1136,8 @@ class plotSkewT(backgroundSkewT):
 
             # rect0 = QtCore.QRect(self.width() - box_width, 25 + idx * self.title_height, box_width, self.title_height)
             rect0 = QtCore.QRect(self.width() - box_width, 25 + idx * self.title_height, box_width, self.title_height)
-            qp.drawText(rect0, QtCore.Qt.TextDontClip | QtCore.Qt.AlignRight, title)
+            title = self.title_metrics.elidedText(title, QtCore.Qt.ElideLeft, box_width)
+            qp.drawText(rect0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, title)
 
             bg_color_idx = (bg_color_idx + 1) % len(self.background_colors)
 
@@ -1507,16 +1508,26 @@ class plotSkewT(backgroundSkewT):
                 label = data[0]
             else:
                 label = tab.thermo.ctof(data[0]) #(1.8 * data[0]) + 32.
-            pen = QtGui.QPen(self.bg_color, 0, QtCore.Qt.SolidLine)
-            brush = QtGui.QBrush(self.bg_color, QtCore.Qt.SolidPattern)
-            qp.setPen(pen)
-            qp.setBrush(brush)
-            rect = QtCore.QRectF(x[0]-8, y[0]+4, 16, 12)
-            qp.drawRect(rect)
+            label_text = tab.utils.INT2STR(label)
+            qp.setFont(self.environment_trace_font)
+            metrics = QtGui.QFontMetrics(self.environment_trace_font)
+            rect_w = max(metrics.horizontalAdvance(label_text) + 6, 18)
+            rect_h = metrics.height() + 2
+
+            y_top = y[0] + 4
+            if y_top + rect_h > self.bry - 1:
+                y_top = y[0] - rect_h - 4
+            y_top = max(self.tpad + 1, min(y_top, self.bry - rect_h - 1))
+
+            trace_color = QtGui.QColor(color).name().lower()
+            dewp_color = QtGui.QColor(self.dewp_color).name().lower()
+            x_left = x[0] - rect_w - 5 if trace_color == dewp_color else x[0] + 5
+            x_left = max(self.lpad + 1, min(x_left, self.width() - rect_w - 2))
+
+            rect = QtCore.QRectF(x_left, y_top, rect_w, rect_h)
             pen = QtGui.QPen(QtGui.QColor(color), 3, QtCore.Qt.SolidLine)
             qp.setPen(pen)
-            qp.setFont(self.environment_trace_font)
-            qp.drawText(rect, QtCore.Qt.AlignCenter, tab.utils.INT2STR(label))
+            qp.drawText(rect, QtCore.Qt.AlignCenter, label_text)
             qp.setClipping(True)
 
     def drawSTDEV(self, pres, data, stdev, color, qp, width=1):

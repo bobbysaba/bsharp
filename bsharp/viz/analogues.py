@@ -4,6 +4,7 @@ from qtpy import QtGui, QtCore, QtWidgets
 import bsharp.sharptab as tab
 from bsharp.sharptab.constants import *
 import bsharp.databases.sars as sars
+from bsharp.viz.fonts import point_size, scaled_font
 import platform
 
 from datetime import datetime
@@ -51,16 +52,16 @@ class backgroundAnalogues(QtWidgets.QFrame):
         self.tlx = self.rpad; self.tly = self.tpad
         self.brx = self.wid; self.bry = self.hgt
 
-        fsize1 = np.floor(.09 * self.hgt)
-        fsize2 = np.floor(.07 * self.hgt)
-        fsize3 = np.floor(.06 * self.hgt)
+        fsize1 = point_size(.055 * self.hgt, minimum=8, maximum=11)
+        fsize2 = point_size(.050 * self.hgt, minimum=8, maximum=10)
+        fsize3 = point_size(.044 * self.hgt, minimum=7, maximum=9)
 
-        self.tpad = np.floor(.03 * self.hgt)
+        self.tpad = point_size(.018 * self.hgt, minimum=3, maximum=5)
 
         ## set various fonts
-        self.title_font = QtGui.QFont('Helvetica', fsize1)
-        self.plot_font = QtGui.QFont('Helvetica', fsize2)
-        self.match_font = QtGui.QFont('Helvetica', fsize3)
+        self.title_font = scaled_font(self.hgt, .055, minimum=8, maximum=11)
+        self.plot_font = scaled_font(self.hgt, .050, minimum=8, maximum=10)
+        self.match_font = scaled_font(self.hgt, .044, minimum=7, maximum=9)
         ## get the metrics on the fonts. This is used to get their size.
         self.title_metrics = QtGui.QFontMetrics( self.title_font )
         self.plot_metrics = QtGui.QFontMetrics( self.plot_font )
@@ -81,9 +82,9 @@ class backgroundAnalogues(QtWidgets.QFrame):
             self.plot_metrics = QtGui.QFontMetrics( self.plot_font )
             self.match_metrics = QtGui.QFontMetrics( self.match_font )
 		
-        self.title_height = self.title_metrics.xHeight() + self.tpad
-        self.plot_height = self.plot_metrics.xHeight() + self.tpad
-        self.match_height = self.match_metrics.xHeight() + self.tpad
+        self.title_height = self.title_metrics.height() + self.tpad
+        self.plot_height = self.plot_metrics.height() + self.tpad
+        self.match_height = self.match_metrics.height() + self.tpad
         ## this variable gets set and used by other functions for knowing
         ## where in pixel space the last line of text ends
         self.ylast = self.tpad
@@ -114,7 +115,7 @@ class backgroundAnalogues(QtWidgets.QFrame):
         ## add to self.ylast the height of the font + padding
         qp.setFont(self.title_font)
         rect0 = QtCore.QRect(0, self.ylast, self.brx, self.title_height)
-        qp.drawText(rect0, QtCore.Qt.TextDontClip | QtCore.Qt.AlignCenter,
+        qp.drawText(rect0, QtCore.Qt.AlignCenter,
             'SARS - Sounding Analogue System')
         self.ylast += (self.title_height + self.tpad)
         
@@ -127,12 +128,12 @@ class backgroundAnalogues(QtWidgets.QFrame):
         ## plot the text for the hail and supercell windows using the running
         ## ylast sum
         qp.setFont(self.plot_font)
-        rect1 = QtCore.QRect(x1*1, self.ylast, x1, self.plot_height)
-        qp.drawText(rect1, QtCore.Qt.TextDontClip | QtCore.Qt.AlignCenter,
+        rect1 = QtCore.QRectF(0, self.ylast, self.brx / 2., self.plot_height)
+        qp.drawText(rect1, QtCore.Qt.AlignCenter,
             'SUPERCELL')
             
-        rect2 = QtCore.QRect(x1*4, self.ylast, x1, self.plot_height)
-        qp.drawText(rect2, QtCore.Qt.TextDontClip | QtCore.Qt.AlignCenter,
+        rect2 = QtCore.QRectF(self.brx / 2., self.ylast, self.brx / 2., self.plot_height)
+        qp.drawText(rect2, QtCore.Qt.AlignCenter,
             'SGFNT HAIL')
         ## Add to the running sum once more for future text
         self.ylast += (self.title_height)

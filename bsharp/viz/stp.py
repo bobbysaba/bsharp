@@ -4,6 +4,7 @@ from qtpy import QtGui, QtCore, QtWidgets
 import bsharp.sharptab as tab
 import bsharp.databases.inset_data as inset_data
 from bsharp.sharptab.constants import *
+from bsharp.viz.fonts import fit_font, font, point_size
 import platform
 
 ## routine written by Kelton Halbert and Greg Blumberg
@@ -31,22 +32,22 @@ class backgroundSTP(QtWidgets.QFrame):
             "  border-color: #3399CC;}")
         self.textpad = 5
         self.font_ratio = 0.0512
-        fsize1 = round(self.size().height() * self.font_ratio) + 2
-        fsize2 = round(self.size().height() * self.font_ratio)
-        self.plot_font = QtGui.QFont('Helvetica', fsize1 )
-        self.box_font = QtGui.QFont('Helvetica', fsize2)
+        fsize1 = point_size(self.size().height() * self.font_ratio + 2, minimum=8, maximum=11)
+        fsize2 = point_size(self.size().height() * self.font_ratio, minimum=7, maximum=10)
+        self.plot_font = font(fsize1)
+        self.box_font = font(fsize2)
         self.plot_metrics = QtGui.QFontMetrics( self.plot_font )
         self.box_metrics = QtGui.QFontMetrics(self.box_font)
         if platform.system() == "Windows":
             fsize1 -= self.plot_metrics.descent()
             fsize2 -= self.box_metrics.descent()
 
-            self.plot_font = QtGui.QFont('Helvetica', fsize1 )
-            self.box_font = QtGui.QFont('Helvetica', fsize2)
+            self.plot_font = font(fsize1)
+            self.box_font = font(fsize2)
             self.plot_metrics = QtGui.QFontMetrics( self.plot_font )
             self.box_metrics = QtGui.QFontMetrics(self.box_font)
-        self.plot_height = self.plot_metrics.xHeight()# + self.textpad
-        self.box_height = self.box_metrics.xHeight() + self.textpad
+        self.plot_height = self.plot_metrics.height()# + self.textpad
+        self.box_height = self.box_metrics.height() + 1
         self.tpad = self.plot_height + 15; 
         self.bpad = self.plot_height + 2
         self.lpad = 0.; self.rpad = 0.
@@ -513,10 +514,9 @@ class plotSTP(backgroundSTP):
             return
 
         ## this function handles painting the plot
-        ## create a new painter obkect
+        ## create a new painter object
         qp = QtGui.QPainter()
         self.draw_stp(qp)
-        self.draw_box(qp)
 
     def draw_stp(self, qp):
         if not tab.utils.QC(self.stpc):
@@ -539,14 +539,14 @@ class plotSTP(backgroundSTP):
 
     def draw_box(self, qp):
         qp.begin(self.plotBitMap)
-        width = self.brx / 14.
-        left_x = width * 7
+        plot_width = self.brx / 14.
+        left_x = plot_width * 7
         right_x = self.brx - 5.
         top_y = self.stp_to_pix(11.)
-        vspace = self.box_height + 1
+        vspace = self.box_height
         if platform.system() == "Windows":
             vspace += self.box_metrics.descent()
-        bot_y = top_y + vspace * 8
+        bot_y = top_y + vspace * 8 + 4
         ## fill the box with a black background
         brush = QtGui.QBrush(self.bg_color, QtCore.Qt.SolidPattern)
         pen = QtGui.QPen(self.bg_color, 0, QtCore.Qt.SolidLine)
@@ -563,18 +563,27 @@ class plotSTP(backgroundSTP):
         qp.drawLine( left_x, top_y, left_x, bot_y )
         qp.drawLine( right_x, top_y, right_x, bot_y)
         ## set the font and line width for the rest of the plotting
-        qp.setFont(self.box_font)
         ## plot the left column of text
-        width = right_x - left_x - 3
+        width = right_x - left_x - 6
         y1 = top_y + 2
         x1 = left_x+3
-        x2 = x1 + (width * .75)
+        value_w = 28
+        label_w = width - value_w - 3
+        x2 = right_x - value_w - 3
         ## start with the header/title
-        texts = ['Prob EF2+ torn with supercell', 'Sample CLIMO = .15 sigtor']
-        for text in texts:
+        header_texts = ['Prob EF2+ Torn with supercell', 'Sample CLIMO = .15 sigtor']
+        body_texts = ['based on CAPE: ', 'based on LCL:', 'based on ESRH:', 'based on EBWD:',
+                      'based on STPC:', 'based on STP_fixed:' ]
+        table_font = self.box_font
+        for text in header_texts + body_texts:
+            table_font = fit_font(text, width, table_font.pointSize(), minimum=6)
+        table_metrics = QtGui.QFontMetrics(table_font)
+
+        for text in header_texts:
+            qp.setFont(table_font)
             rect = QtCore.QRectF(x1, y1, width, self.box_height)
-            qp.drawText(rect, QtCore.Qt.TextDontClip | QtCore.Qt.AlignLeft, text)
-            vspace = self.box_height + 1
+            qp.drawText(rect, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, text)
+            vspace = self.box_height
             if platform.system() == "Windows":
                 vspace += self.box_metrics.descent()
             y1 += vspace
@@ -583,17 +592,17 @@ class plotSTP(backgroundSTP):
             vspace += 2
         qp.drawLine(left_x, vspace, right_x, vspace)
         ## draw the variable names
-        texts = ['based on CAPE: ', 'based on LCL:', 'based on ESRH:', 'based on EBWD:',
-                 'based on STPC:', 'based on STP_fixed:' ]
         probs = [self.cape_p, self.lcl_p, self.esrh_p, self.ebwd_p, self.stpc_p, self.stpf_p]
         colors = [self.cape_c, self.lcl_c, self.esrh_c, self.ebwd_c, self.stpc_c, self.stpf_c]
-        for text, p, c in zip(texts, probs, colors):
+        qp.setFont(table_font)
+        for text, p, c in zip(body_texts, probs, colors):
             pen = QtGui.QPen(c, 1, QtCore.Qt.SolidLine)
             qp.setPen(pen)
-            rect = QtCore.QRectF(x1, y1, width, self.box_height)
-            rect2 = QtCore.QRectF(x2, y1, width, self.box_height)
-            qp.drawText(rect, QtCore.Qt.TextDontClip | QtCore.Qt.AlignLeft, text)
-            qp.drawText(rect2, QtCore.Qt.TextDontClip | QtCore.Qt.AlignLeft, tab.utils.FLOAT2STR(p,2) )
+            rect = QtCore.QRectF(x1, y1, label_w, self.box_height)
+            rect2 = QtCore.QRectF(x2, y1, value_w, self.box_height)
+            label = table_metrics.elidedText(text, QtCore.Qt.ElideRight, int(label_w))
+            qp.drawText(rect, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, label)
+            qp.drawText(rect2, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter, tab.utils.FLOAT2STR(p,2) )
             vspace = self.box_height
             if platform.system() == "Windows":
                 vspace += self.box_metrics.descent()
